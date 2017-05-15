@@ -15,9 +15,9 @@ import static com.sleepeasysoftware.platetoccd.FileDelete.deleteAndFlushFs;
  */
 public class ApplicationUsageTest {
 
-    public static final String EXISTING_INPUT_FILE = "src/test/resources/happy_path_input.xlsx";
+    static final String EXISTING_INPUT_FILE = "src/test/resources/happy_path_input.xlsx";
     private static final String EXISTING_OUTPUT_FILE = "src/test/resources/happy_path_input.xlsx";
-    public static final String DOES_NOT_EXIST_FILE = "src/test/resources/does_not_exist";
+    static final String DOES_NOT_EXIST_FILE = "src/test/resources/does_not_exist";
 
     private SpringApplicationBuilder subject;
 
@@ -56,5 +56,14 @@ public class ApplicationUsageTest {
         thrown.expect(IllegalStateException.class);
 
         subject.run(EXISTING_INPUT_FILE, EXISTING_OUTPUT_FILE);
+    }
+
+    @Test
+    public void acceptsIncludeRowCount() throws Exception {
+        String includeRowCount = "--include-row-count";
+
+        subject.run(includeRowCount, EXISTING_INPUT_FILE, DOES_NOT_EXIST_FILE);
+        subject.run(EXISTING_INPUT_FILE, includeRowCount, DOES_NOT_EXIST_FILE);
+        subject.run(EXISTING_INPUT_FILE, DOES_NOT_EXIST_FILE, includeRowCount);
     }
 }

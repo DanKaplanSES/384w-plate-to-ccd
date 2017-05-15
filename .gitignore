@@ -26,3 +26,4 @@ nbdist/
 test_output.xlsx
 test_output.csv
 does_not_exist
+test_output_with_row_count.csv

@@ -22,6 +22,8 @@ import static org.hamcrest.core.IsEqual.equalTo;
 public class AcceptanceTest {
 
     private static final String OUTPUT_FILE = "src/test/resources/test_output.csv";
+    private static final String OUTPUT_FILE_WITH_ROW_COUNT = "src/test/resources/test_output_with_row_count.csv";
+    private static final int ROW_COUNT_INDEX = 0;
     private static final int PLATE_COLUMN = 0;
     private static final int WELL_INDEX = 1;
     private static final int DATA_INDEX = 2;
@@ -32,12 +34,16 @@ public class AcceptanceTest {
     @Before
     public void setUp() throws Exception {
         deleteAndFlushFs(OUTPUT_FILE);
+        deleteAndFlushFs(OUTPUT_FILE_WITH_ROW_COUNT);
 
         new SpringApplicationBuilder(Application.class).
                 run(EXISTING_INPUT_FILE, OUTPUT_FILE);
+
+        new SpringApplicationBuilder(Application.class).
+                run(ApplicationUsage.INCLUDE_ROW_COUNT, EXISTING_INPUT_FILE, OUTPUT_FILE_WITH_ROW_COUNT);
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    @SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})
     @Test
     public void headerOutput() throws Exception {
 
@@ -57,7 +63,7 @@ public class AcceptanceTest {
         assertThat(sheet, hasSize(1153));
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    @SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})
     @Test
     public void plateOutput() throws Exception {
 
@@ -76,7 +82,18 @@ public class AcceptanceTest {
         }
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    @SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})
+    @Test
+    public void plateOutputWithRowCount() throws Exception {
+
+        List<List<Optional<String>>> sheet = new CsvParser().parse(OUTPUT_FILE_WITH_ROW_COUNT);
+
+        assertThat(sheet.get(0).get(ROW_COUNT_INDEX).get(), equalTo("Row Count"));
+        assertThat(sheet.get(1).get(ROW_COUNT_INDEX).get(), equalTo("1"));
+        assertThat(sheet.get(1152).get(ROW_COUNT_INDEX).get(), equalTo("1152"));
+    }
+
+    @SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})
     @Test
     public void wellOutput() throws Exception {
 
@@ -92,7 +109,7 @@ public class AcceptanceTest {
         assertThat(sheet.get(1152).get(WELL_INDEX).get(), equalTo("P24"));
     }
 
-    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    @SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})
     @Test
     public void dataOutput() throws Exception {
         List<List<Optional<String>>> outputSheet = new CsvParser().parse(OUTPUT_FILE);

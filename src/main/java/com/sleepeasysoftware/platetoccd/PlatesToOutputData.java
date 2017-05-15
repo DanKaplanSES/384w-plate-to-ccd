@@ -15,7 +15,7 @@ import java.util.Optional;
 public class PlatesToOutputData {
     public List<OutputDataRow> execute(List<Plate> plates) {
         List<OutputDataRow> output = new ArrayList<>();
-
+        int row = 1;
         for (Plate plate : plates) {
             for (String columnName : plate.getData().columnKeySet()) {
                 for (String rowName : plate.getData().rowKeySet()) {
@@ -23,7 +23,8 @@ public class PlatesToOutputData {
                     String well = rowName + columnName;
                     Optional<String> data = plate.getData().get(rowName, columnName);
 
-                    output.add(new OutputDataRow(plateName, well, data));
+                    output.add(new OutputDataRow(row, plateName, well, data));
+                    row++;
                 }
             }
         }

@@ -21,6 +21,7 @@ import java.util.Optional;
 public class ApplicationUsage implements ApplicationRunner {
 
 
+    static final String INCLUDE_ROW_COUNT = "--include-row-count";
     private final ExcelParser excelParser;
     private final DataToPlates dataToPlates;
     private final PlatesToOutputData platesToOutputData;
@@ -34,20 +35,22 @@ public class ApplicationUsage implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        List<String> arguments = args.getNonOptionArgs();
-        if (arguments.size() != 2) {
+        List<String> files = args.getNonOptionArgs();
+        if (files.size() != 2) {
             throw new IllegalArgumentException("Incorrect usage:\n" +
-                    "You need to pass in two arguments.  The first one is the\n" +
+                    "You need to pass in at least two arguments.  The first one is the\n" +
                     "path to the input file.  The second one is the path to the output file.  e.g.,\n" +
-                    "java -jar 384w-plate-to-ccd.jar '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_input.xlsx' '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_output.xlsx'");
+                    "java -jar 384w-plate-to-ccd.jar '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_input.xlsx' '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_output.xlsx'\n" +
+                    "You can also pass in an optional argument named " + INCLUDE_ROW_COUNT + " that will place a \"ROW_COUNT\" column at the beginning.\n" +
+                    "java -jar 384w-plate-to-ccd.jar " + INCLUDE_ROW_COUNT + " '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_input.xlsx' '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_output.xlsx'");
         }
 
-        String inputPath = arguments.get(0);
+        String inputPath = files.get(0);
         if (!new File(inputPath).exists()) {
             throw new IllegalArgumentException("Could not find the input file.  Looked for " + inputPath);
         }
 
-        String outputPath = arguments.get(1);
+        String outputPath = files.get(1);
         if (new File(outputPath).exists()) {
             throw new IllegalArgumentException("Output file already exists.  The output file must not already exist.  Found " + outputPath);
         }
@@ -59,10 +62,22 @@ public class ApplicationUsage implements ApplicationRunner {
         List<OutputDataRow> outputData = platesToOutputData.execute(plates);
 
         try (CSVWriter writer = new CSVWriter(new FileWriter(outputPath))) {
-            writer.writeNext(new String[]{"Plate", "Well", "Data"});
+            String[] header;
+            boolean includeRowCount = args.containsOption(INCLUDE_ROW_COUNT.substring(2));
+            if (includeRowCount) {
+                header = new String[]{"Row Count", "Plate", "Well", "Data"};
+            } else {
+                header = new String[]{"Plate", "Well", "Data"};
+            }
+            writer.writeNext(header);
 
             for (OutputDataRow outputRow : outputData) {
-                String[] rawRow = {outputRow.getPlateName(), outputRow.getWell(), outputRow.getData().orElse("")};
+                String[] rawRow;
+                if (includeRowCount) {
+                    rawRow = new String[]{outputRow.getRowCount() + "", outputRow.getPlateName(), outputRow.getWell(), outputRow.getData().orElse("")};
+                } else {
+                    rawRow = new String[]{outputRow.getPlateName(), outputRow.getWell(), outputRow.getData().orElse("")};
+                }
                 writer.writeNext(rawRow);
             }
         }
