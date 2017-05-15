@@ -1,6 +1,7 @@
 package com.sleepeasysoftware.platetoccd;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import com.sleepeasysoftware.platetoccd.model.Plate;
 import org.slf4j.Logger;
@@ -29,7 +30,10 @@ public class DataToPlates {
             List<Optional<String>> currentRow = inputData.get(inputRowIndex);
 
             if (currentRowContainsPlateName(previousRow)) {
+                List<String> columnNames = getColumnNames(currentRow);
+
                 List<List<Optional<String>>> inputDataOfOnePlate = inputData.subList(inputRowIndex + 1, inputRowIndex + INPUT_ROWS_PER_PLATE - 1);
+
 
                 Table<String, String, Optional<String>> plateData = HashBasedTable.create();
                 String plateName = currentRow.get(0).orElse("(Plate Name Missing)");
@@ -38,7 +42,7 @@ public class DataToPlates {
 
                     String plateRow = Character.toString(alphabeticRollover(rowIndex));
                     for (int columnIndex = 1; columnIndex < 25; columnIndex++) {
-                        String plateColumn = String.format("%02d", columnIndex);
+                        String plateColumn = columnNames.get(columnIndex - 1);
 
                         try {
                             plateData.put(plateRow, plateColumn, inputPlateRow.get(columnIndex));
@@ -53,6 +57,23 @@ public class DataToPlates {
         }
 
         return plates;
+    }
+
+    private List<String> getColumnNames(List<Optional<String>> headerRow) {
+        List<String> columnNames = Lists.newArrayList();
+        for (int columnIndex = 1; columnIndex < 25; columnIndex++) {
+            Optional<String> potentialColumnName = headerRow.get(columnIndex);
+            if (potentialColumnName.isPresent()) {
+                String columnName = potentialColumnName.get();
+                if (columnName.length() == 1) {
+                    columnName = "0" + columnName;
+                }
+                columnNames.add(columnName);
+            } else {
+                columnNames.add("COLUMN NAME NOT FOUND");
+            }
+        }
+        return columnNames;
     }
 
     private boolean currentRowContainsPlateName(List<Optional<String>> previousRow) {

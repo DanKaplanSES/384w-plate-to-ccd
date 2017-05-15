@@ -19,9 +19,7 @@ import static org.junit.Assert.assertThat;
  */
 public class DataToPlatesTest {
 
-    private static final int PLATE_COLUMN = 0;
-    private static final int WELL_INDEX = 1;
-    private static final int DATA_INDEX = 2;
+    static final String REARRANGED_COLUMNS = "src/test/resources/plate1_rearranged_column.xlsx";
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -57,5 +55,29 @@ public class DataToPlatesTest {
         assertThat(plate3.getData().get("P", "24").get(), equalTo("57 25"));
         assertThat(plate3.getData().columnKeySet().size(), equalTo(24));
         assertThat(plate3.getData().rowKeySet().size(), equalTo(16));
+    }
+
+    @SuppressWarnings("OptionalGetWithoutIsPresent")
+    @Test
+    public void respectColumnOrderWhenNotOrdered() throws Exception {
+        List<List<Optional<String>>> sheet = new ExcelParser().parseFirstSheet(REARRANGED_COLUMNS);
+
+        List<Plate> plates = subject.execute(sheet);
+
+        assertThat(plates, hasSize(3));
+
+        Plate plate1 = plates.get(0);
+        assertThat(plate1.getName(), equalTo("Plate1"));
+        assertThat(plate1.getData().get("A", "01").get(), equalTo("4 25"));
+        assertThat(plate1.getData().get("P", "24").get(), equalTo("19 2"));
+        assertThat(plate1.getData().columnKeySet().size(), equalTo(24));
+        assertThat(plate1.getData().rowKeySet().size(), equalTo(16));
+
+        Plate plate2 = plates.get(1);
+        assertThat(plate2.getName(), equalTo("Plate2"));
+        assertThat(plate2.getData().get("A", "01").get(), equalTo("23 2"));
+        assertThat(plate2.getData().get("P", "24").get(), equalTo("38 25"));
+        assertThat(plate2.getData().columnKeySet().size(), equalTo(24));
+        assertThat(plate2.getData().rowKeySet().size(), equalTo(16));
     }
 }
