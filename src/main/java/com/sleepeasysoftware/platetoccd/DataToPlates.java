@@ -22,7 +22,7 @@ public class DataToPlates {
     private static final int PLATE_NAME_INDEX = 0;
     private static final int INPUT_ROWS_PER_PLATE = 18;
 
-    public List<Plate> execute(List<List<Optional<String>>> inputData) {
+    public List<Plate> execute(List<List<Optional<String>>> inputData, List<String> ignoredColumns) {
         List<Plate> plates = new ArrayList<>();
 
         for (int inputRowIndex = 1; inputRowIndex < inputData.size(); inputRowIndex++) {
@@ -34,7 +34,6 @@ public class DataToPlates {
 
                 List<List<Optional<String>>> inputDataOfOnePlate = inputData.subList(inputRowIndex + 1, inputRowIndex + INPUT_ROWS_PER_PLATE - 1);
 
-
                 Table<String, String, Optional<String>> plateData = HashBasedTable.create();
                 String plateName = currentRow.get(0).orElse("(Plate Name Missing)");
                 for (int rowIndex = 0; rowIndex < inputDataOfOnePlate.size(); rowIndex++) {
@@ -43,13 +42,21 @@ public class DataToPlates {
                     String plateRow = Character.toString(alphabeticRollover(rowIndex));
                     for (int columnIndex = 1; columnIndex < 25; columnIndex++) {
                         String plateColumn = columnNames.get(columnIndex - 1);
+                        if (!ignoredColumns.contains(plateColumn)) {
+                            try {
+                                String formattedColumn = plateColumn;
+                                if (plateColumn.length() == 1) {
+                                    formattedColumn = "0" + plateColumn;
+                                }
 
-                        try {
-                            plateData.put(plateRow, plateColumn, inputPlateRow.get(columnIndex));
-                        } catch (IndexOutOfBoundsException e) {
-                            log.error("Could not process plate named " + plateName);
-                            throw e;
+                                plateData.put(plateRow, formattedColumn, inputPlateRow.get(columnIndex));
+                            } catch (IndexOutOfBoundsException e) {
+                                log.error("Could not process plate named " + plateName);
+                                throw e;
+                            }
+
                         }
+
                     }
                 }
                 plates.add(new Plate(plateName, plateData));
@@ -64,11 +71,7 @@ public class DataToPlates {
         for (int columnIndex = 1; columnIndex < 25; columnIndex++) {
             Optional<String> potentialColumnName = headerRow.get(columnIndex);
             if (potentialColumnName.isPresent()) {
-                String columnName = potentialColumnName.get();
-                if (columnName.length() == 1) {
-                    columnName = "0" + columnName;
-                }
-                columnNames.add(columnName);
+                columnNames.add(potentialColumnName.get());
             } else {
                 columnNames.add("COLUMN NAME NOT FOUND");
             }

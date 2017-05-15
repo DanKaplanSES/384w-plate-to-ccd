@@ -1,6 +1,7 @@
 package com.sleepeasysoftware.platetoccd;
 
 import au.com.bytecode.opencsv.CSVWriter;
+import com.google.common.collect.Lists;
 import com.sleepeasysoftware.platetoccd.model.OutputDataRow;
 import com.sleepeasysoftware.platetoccd.model.Plate;
 import com.sleepeasysoftware.platetoccd.parser.ExcelParser;
@@ -42,7 +43,10 @@ public class ApplicationUsage implements ApplicationRunner {
                     "path to the input file.  The second one is the path to the output file.  e.g.,\n" +
                     "java -jar 384w-plate-to-ccd.jar '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_input.xlsx' '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_output.xlsx'\n" +
                     "You can also pass in an optional argument named " + INCLUDE_ROW_COUNT + " that will place a \"ROW_COUNT\" column at the beginning.\n" +
-                    "java -jar 384w-plate-to-ccd.jar " + INCLUDE_ROW_COUNT + " '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_input.xlsx' '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_output.xlsx'");
+                    "java -jar 384w-plate-to-ccd.jar " + INCLUDE_ROW_COUNT + " '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_input.xlsx' '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_output.xlsx'\n" +
+                    "You can ignore columns by passing in --ignore-column arguments.  e.g.,\n" +
+                    "java -jar --ignore-column=1 --ignore-column=2 --ignore-column=23 --ignore-column=24 384w-plate-to-ccd.jar '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_input.xlsx' '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_output.xlsx'"
+            );
         }
 
         String inputPath = files.get(0);
@@ -55,15 +59,21 @@ public class ApplicationUsage implements ApplicationRunner {
             throw new IllegalArgumentException("Output file already exists.  The output file must not already exist.  Found " + outputPath);
         }
 
+        List<String> ignoredColumns = args.getOptionValues("ignore-column");
+        if (ignoredColumns == null) {
+            ignoredColumns = Lists.newArrayList();
+        }
+
         List<List<Optional<String>>> inputData = excelParser.parseFirstSheet(inputPath);
 
-        List<Plate> plates = dataToPlates.execute(inputData);
+        List<Plate> plates = dataToPlates.execute(inputData, ignoredColumns);
 
         List<OutputDataRow> outputData = platesToOutputData.execute(plates);
 
+        boolean includeRowCount = args.containsOption(INCLUDE_ROW_COUNT.substring(2));
+
         try (CSVWriter writer = new CSVWriter(new FileWriter(outputPath))) {
             String[] header;
-            boolean includeRowCount = args.containsOption(INCLUDE_ROW_COUNT.substring(2));
             if (includeRowCount) {
                 header = new String[]{"Row Count", "Plate", "Well", "Data"};
             } else {

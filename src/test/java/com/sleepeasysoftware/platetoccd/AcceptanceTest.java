@@ -23,6 +23,7 @@ public class AcceptanceTest {
 
     private static final String OUTPUT_FILE = "src/test/resources/test_output.csv";
     private static final String OUTPUT_FILE_WITH_ROW_COUNT = "src/test/resources/test_output_with_row_count.csv";
+    private static final String OUTPUT_FILE_WITH_IGNORED_COLUMNS = "src/test/resources/test_output_with_ignored_columns.csv";
     private static final int ROW_COUNT_INDEX = 0;
     private static final int PLATE_COLUMN = 0;
     private static final int WELL_INDEX = 1;
@@ -35,12 +36,16 @@ public class AcceptanceTest {
     public void setUp() throws Exception {
         deleteAndFlushFs(OUTPUT_FILE);
         deleteAndFlushFs(OUTPUT_FILE_WITH_ROW_COUNT);
+        deleteAndFlushFs(OUTPUT_FILE_WITH_IGNORED_COLUMNS);
 
         new SpringApplicationBuilder(Application.class).
                 run(EXISTING_INPUT_FILE, OUTPUT_FILE);
 
         new SpringApplicationBuilder(Application.class).
                 run(ApplicationUsage.INCLUDE_ROW_COUNT, EXISTING_INPUT_FILE, OUTPUT_FILE_WITH_ROW_COUNT);
+
+        new SpringApplicationBuilder(Application.class).
+                run("--ignore-column=1", "--ignore-column=24", EXISTING_INPUT_FILE, OUTPUT_FILE_WITH_IGNORED_COLUMNS);
     }
 
     @SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})
@@ -107,6 +112,21 @@ public class AcceptanceTest {
         assertThat(sheet.get(384).get(WELL_INDEX).get(), equalTo("P24"));
         assertThat(sheet.get(385).get(WELL_INDEX).get(), equalTo("A01"));
         assertThat(sheet.get(1152).get(WELL_INDEX).get(), equalTo("P24"));
+    }
+
+    @SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})
+    @Test
+    public void wellOutputWithIgnoredColumns() throws Exception {
+
+        List<List<Optional<String>>> sheet = new CsvParser().parse(OUTPUT_FILE_WITH_IGNORED_COLUMNS);
+
+        assertThat(sheet.get(0).get(WELL_INDEX).get(), equalTo("Well"));
+        assertThat(sheet.get(1).get(WELL_INDEX).get(), equalTo("A02"));
+        assertThat(sheet.get(2).get(WELL_INDEX).get(), equalTo("B02"));
+        assertThat(sheet.get(17).get(WELL_INDEX).get(), equalTo("A03"));
+        assertThat(sheet.get(32).get(WELL_INDEX).get(), equalTo("P03"));
+        assertThat(sheet.get(352).get(WELL_INDEX).get(), equalTo("P23"));
+        assertThat(sheet.size(), equalTo(1057));
     }
 
     @SuppressWarnings({"OptionalGetWithoutIsPresent", "ConstantConditions"})

@@ -1,5 +1,6 @@
 package com.sleepeasysoftware.platetoccd;
 
+import com.google.common.collect.Lists;
 import com.sleepeasysoftware.platetoccd.model.Plate;
 import com.sleepeasysoftware.platetoccd.parser.ExcelParser;
 import org.junit.Rule;
@@ -31,7 +32,7 @@ public class DataToPlatesTest {
     public void plateDataFromInput() throws Exception {
         List<List<Optional<String>>> sheet = new ExcelParser().parseFirstSheet(EXISTING_INPUT_FILE);
 
-        List<Plate> plates = subject.execute(sheet);
+        List<Plate> plates = subject.execute(sheet, Lists.newArrayList());
 
         assertThat(plates, hasSize(3));
 
@@ -62,7 +63,7 @@ public class DataToPlatesTest {
     public void respectColumnOrderWhenNotOrdered() throws Exception {
         List<List<Optional<String>>> sheet = new ExcelParser().parseFirstSheet(REARRANGED_COLUMNS);
 
-        List<Plate> plates = subject.execute(sheet);
+        List<Plate> plates = subject.execute(sheet, Lists.newArrayList());
 
         assertThat(plates, hasSize(3));
 
