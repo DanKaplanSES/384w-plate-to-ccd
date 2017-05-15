@@ -45,7 +45,8 @@ public class ApplicationUsage implements ApplicationRunner {
                     "You can also pass in an optional argument named " + INCLUDE_ROW_COUNT + " that will place a \"ROW_COUNT\" column at the beginning.\n" +
                     "java -jar 384w-plate-to-ccd.jar " + INCLUDE_ROW_COUNT + " '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_input.xlsx' '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_output.xlsx'\n" +
                     "You can ignore columns by passing in --ignore-column arguments.  e.g.,\n" +
-                    "java -jar --ignore-column=1 --ignore-column=2 --ignore-column=23 --ignore-column=24 384w-plate-to-ccd.jar '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_input.xlsx' '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_output.xlsx'"
+                    "java -jar --ignore-column=1 --ignore-column=2 --ignore-column=23 --ignore-column=24 384w-plate-to-ccd.jar '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_input.xlsx' '/Users/pivotal/workspace/384w-plate-to-ccd/src/test/resources/happy_path_output.xlsx'\n" +
+                    "will ignore columns 1, 2, 23, and 24 of the plate."
             );
         }
 
