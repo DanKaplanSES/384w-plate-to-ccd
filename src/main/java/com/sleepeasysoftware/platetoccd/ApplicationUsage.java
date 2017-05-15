@@ -71,10 +71,11 @@ public class ApplicationUsage implements ApplicationRunner {
             }
             writer.writeNext(header);
 
-            for (OutputDataRow outputRow : outputData) {
+            for (int i = 0; i < outputData.size(); i++) {
+                OutputDataRow outputRow = outputData.get(i);
                 String[] rawRow;
                 if (includeRowCount) {
-                    rawRow = new String[]{outputRow.getRowCount() + "", outputRow.getPlateName(), outputRow.getWell(), outputRow.getData().orElse("")};
+                    rawRow = new String[]{(i + 1) + "", outputRow.getPlateName(), outputRow.getWell(), outputRow.getData().orElse("")};
                 } else {
                     rawRow = new String[]{outputRow.getPlateName(), outputRow.getWell(), outputRow.getData().orElse("")};
                 }
