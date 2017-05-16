@@ -24,7 +24,7 @@ public class AcceptanceTest {
     private static final String OUTPUT_FILE = "src/test/resources/test_output.csv";
     private static final String OUTPUT_FILE_WITH_ROW_COUNT = "src/test/resources/test_output_with_row_count.csv";
     private static final String OUTPUT_FILE_WITH_IGNORED_COLUMNS = "src/test/resources/test_output_with_ignored_columns.csv";
-    private static final int ROW_COUNT_INDEX = 0;
+    private static final int ROW_COUNT_INDEX = 2;
     private static final int PLATE_COLUMN = 0;
     private static final int WELL_INDEX = 1;
     private static final int DATA_INDEX = 2;
@@ -93,7 +93,9 @@ public class AcceptanceTest {
 
         List<List<Optional<String>>> sheet = new CsvParser().parse(OUTPUT_FILE_WITH_ROW_COUNT);
 
+        assertThat(sheet.get(0).get(ROW_COUNT_INDEX - 1).get(), equalTo("Well"));
         assertThat(sheet.get(0).get(ROW_COUNT_INDEX).get(), equalTo("Row Count"));
+        assertThat(sheet.get(0).get(ROW_COUNT_INDEX + 1).get(), equalTo("Data"));
         assertThat(sheet.get(1).get(ROW_COUNT_INDEX).get(), equalTo("1"));
         assertThat(sheet.get(1152).get(ROW_COUNT_INDEX).get(), equalTo("1152"));
     }

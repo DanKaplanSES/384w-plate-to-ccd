@@ -76,7 +76,7 @@ public class ApplicationUsage implements ApplicationRunner {
         try (CSVWriter writer = new CSVWriter(new FileWriter(outputPath))) {
             String[] header;
             if (includeRowCount) {
-                header = new String[]{"Row Count", "Plate", "Well", "Data"};
+                header = new String[]{"Plate", "Well", "Row Count", "Data"};
             } else {
                 header = new String[]{"Plate", "Well", "Data"};
             }
@@ -86,7 +86,8 @@ public class ApplicationUsage implements ApplicationRunner {
                 OutputDataRow outputRow = outputData.get(i);
                 String[] rawRow;
                 if (includeRowCount) {
-                    rawRow = new String[]{(i + 1) + "", outputRow.getPlateName(), outputRow.getWell(), outputRow.getData().orElse("")};
+                    String rowValue = (i + 1) + "";
+                    rawRow = new String[]{outputRow.getPlateName(), outputRow.getWell(), rowValue, outputRow.getData().orElse("")};
                 } else {
                     rawRow = new String[]{outputRow.getPlateName(), outputRow.getWell(), outputRow.getData().orElse("")};
                 }
