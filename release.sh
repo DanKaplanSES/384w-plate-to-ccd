@@ -1,1 +1,1 @@
-git tag latest -f && git push --tags -f && git push
+git tag release-`date +%s` -f && git push --tags -f && git push
